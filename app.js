@@ -233,9 +233,8 @@ async function confirmarBorrado() {
       body: JSON.stringify({ accion: "borrar", fila: fila }),
     });
 
-    todosLosRepuestos = todosLosRepuestos.filter(r => r._fila !== fila);
-    filtrar();
-    setSyncState("ok");
+    await new Promise(r => setTimeout(r, 800));
+    await cargarDatos();
     toast("Repuesto eliminado");
   } catch (e) {
     setSyncState("error");
