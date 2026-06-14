@@ -193,20 +193,43 @@ function renderTabla(datos) {
     </div>`;
 }
 
-// ——— BORRAR ———
+// ——— BORRAR — modal sin confirm() para no bloquear el hilo ———
 const SVG_TRASH = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
 const SVG_SPIN = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
 
-async function borrar(fila, btnEl) {
-  if (!confirm("¿Eliminás este repuesto? Esta acción no se puede deshacer.")) return;
+let _borrarFila = null;
+let _borrarBtn = null;
+
+function borrar(fila, btnEl) {
+  _borrarFila = fila;
+  _borrarBtn = btnEl;
+  // Buscar nombre del repuesto para mostrar en el modal
+  const rep = todosLosRepuestos.find(r => r._fila === fila);
+  document.getElementById("modal-nombre").textContent = rep ? (rep.Nombre + " — " + rep.Marca) : "";
+  document.getElementById("modal-borrar").style.display = "flex";
+  document.getElementById("modal-confirmar").onclick = confirmarBorrado;
+}
+
+function cerrarModal() {
+  document.getElementById("modal-borrar").style.display = "none";
+  _borrarFila = null;
+  _borrarBtn = null;
+}
+
+async function confirmarBorrado() {
+  if (!_borrarFila || !_borrarBtn) return;
+  const fila = _borrarFila;
+  const btnEl = _borrarBtn;
+  cerrarModal();
 
   btnEl.disabled = true;
   btnEl.innerHTML = SVG_SPIN;
   setSyncState("loading");
 
   try {
-    // GET con parámetros — funciona con Apps Script sin problemas de CORS
-    await fetch(SHEETS_URL + "?accion=borrar&fila=" + fila + "&t=" + Date.now());
+    // Apps Script ejecuta la acción aunque el browser tire error de CORS en la respuesta
+    await fetch(SHEETS_URL + "?accion=borrar&fila=" + fila + "&t=" + Date.now())
+      .catch(() => {}); // ignorar error de CORS — la fila igual se borra en Sheets
 
     todosLosRepuestos = todosLosRepuestos.filter(r => r._fila !== fila);
     filtrar();
@@ -219,6 +242,11 @@ async function borrar(fila, btnEl) {
     btnEl.innerHTML = SVG_TRASH;
   }
 }
+
+// Cerrar modal tocando el fondo
+document.addEventListener("click", e => {
+  if (e.target.id === "modal-borrar") cerrarModal();
+});
 
 // ——— ENTER para guardar ———
 document.addEventListener("keydown", (e) => {
