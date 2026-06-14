@@ -203,7 +203,6 @@ let _borrarBtn = null;
 function borrar(fila, btnEl) {
   _borrarFila = fila;
   _borrarBtn = btnEl;
-  // Buscar nombre del repuesto para mostrar en el modal
   const rep = todosLosRepuestos.find(r => r._fila === fila);
   document.getElementById("modal-nombre").textContent = rep ? (rep.Nombre + " — " + rep.Marca) : "";
   document.getElementById("modal-borrar").style.display = "flex";
@@ -227,9 +226,12 @@ async function confirmarBorrado() {
   setSyncState("loading");
 
   try {
-    // Apps Script ejecuta la acción aunque el browser tire error de CORS en la respuesta
-    await fetch(SHEETS_URL + "?accion=borrar&fila=" + fila + "&t=" + Date.now())
-      .catch(() => {}); // ignorar error de CORS — la fila igual se borra en Sheets
+    await fetch(SHEETS_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accion: "borrar", fila: fila }),
+    });
 
     todosLosRepuestos = todosLosRepuestos.filter(r => r._fila !== fila);
     filtrar();
