@@ -194,22 +194,20 @@ function renderTabla(datos) {
 }
 
 // ——— BORRAR ———
+const SVG_TRASH = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
+const SVG_SPIN = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
+
 async function borrar(fila, btnEl) {
   if (!confirm("¿Eliminás este repuesto? Esta acción no se puede deshacer.")) return;
 
   btnEl.disabled = true;
-  btnEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
+  btnEl.innerHTML = SVG_SPIN;
   setSyncState("loading");
 
   try {
-    await fetch(SHEETS_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ _accion: "borrar", _fila: fila }),
-    });
+    // GET con parámetros — funciona con Apps Script sin problemas de CORS
+    await fetch(SHEETS_URL + "?accion=borrar&fila=" + fila + "&t=" + Date.now());
 
-    // Quitar de la lista local y rerenderizar
     todosLosRepuestos = todosLosRepuestos.filter(r => r._fila !== fila);
     filtrar();
     setSyncState("ok");
@@ -218,7 +216,7 @@ async function borrar(fila, btnEl) {
     setSyncState("error");
     toast("Error al eliminar. Revisá la conexión.", "error");
     btnEl.disabled = false;
-    btnEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
+    btnEl.innerHTML = SVG_TRASH;
   }
 }
 
