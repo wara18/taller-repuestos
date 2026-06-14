@@ -574,3 +574,37 @@ tbody tr:hover td { background: var(--bg); }
     bottom: 74px; /* encima del bottom nav */
   }
 }
+
+/* BOTÓN BORRAR */
+.btn-borrar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.13s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.btn-borrar:hover {
+  background: var(--red-light);
+  border-color: #f5c0c0;
+  color: var(--red);
+}
+
+.btn-borrar:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+tbody td:last-child {
+  width: 44px;
+  padding: 8px 10px;
+  text-align: center;
+}
